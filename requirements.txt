@@ -1,0 +1,7 @@
+azure-functions
+azure-identity
+azure-keyvault-secrets
+python-tds
+pandas
+xlsxwriter
+python-dateutil
