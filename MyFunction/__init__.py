@@ -37,7 +37,7 @@ _smtp_password = safe_get_secret(_kv_client, "email-password", required=False)
 _sql_template  = safe_get_secret(_kv_client, "sql-connection-template")  # Required!
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Ledger Report Function triggered.")
+    logging.info("Ledger Report triggered.")
 
     try:
         body = req.get_json()
