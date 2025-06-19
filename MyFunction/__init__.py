@@ -18,8 +18,12 @@ from shared.connection import ConnectionStringError
 
 # --- Key Vault / Secret setup at module level (for cold start cache) ---
 _credential = DefaultAzureCredential()
-_kv_url = os.getenv("KEYVAULT_URL", "https://ledgervaultdev.vault.azure.net/")
+_kv_url = os.environ.get("KEYVAULT_URL")
+if not _kv_url:
+    raise RuntimeError("KEYVAULT_URL environment variable must be set")
 _kv_client = SecretClient(vault_url=_kv_url, credential=_credential)
+
+logging.info(f"Using Key Vault URL: {_kv_url}")
 
 def safe_get_secret(client, name, required=True, default=None):
     try:
