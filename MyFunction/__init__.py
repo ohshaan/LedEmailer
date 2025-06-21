@@ -39,7 +39,6 @@ _smtp_port     = int(safe_get_secret(_kv_client, "email-smtp-port", required=Fal
 _smtp_username = safe_get_secret(_kv_client, "email-username", required=False)
 _smtp_password = safe_get_secret(_kv_client, "email-password", required=False)
 _sql_template  = safe_get_secret(_kv_client, "sql-connection-template")  # Required!
-_sql_template  = safe_get_secret(_kv_client, "sql-connection-template")  # Required!
 
 logging.info(f"SMTP config: server={_smtp_server}, port={_smtp_port}, user={_smtp_username}")
 
@@ -53,16 +52,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Invalid JSON body", status_code=400)
 
     # Validate required request fields
-    for fld in ("sql_proc", "email_to"):
+    for fld in ("sql_proc", "email_to", "db_code"):
         if fld not in body or not body[fld]:
             return func.HttpResponse(f"Missing required field: {fld}", status_code=400)
 
     sql_proc = body["sql_proc"]
     email_to = body["email_to"].strip()
     currency = body.get("currency", "QAR")
-    auth_code = req.params.get("code")
-    if not auth_code:
-        return func.HttpResponse("Missing function key in URL (?code=...)", status_code=400)
+    db_code = body.get("db_code")  # Use db_code from JSON, NOT the URL param
+    if not db_code:
+        return func.HttpResponse("Missing db_code in request body.", status_code=400)
 
     # Parse parameters from SQL string (dates, ledgers)
     try:
@@ -77,7 +76,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     # --- Per-request secrets (DB name per user) ---
     try:
         tpl = _sql_template
-        dbnm = _kv_client.get_secret(f"db-map-{auth_code}").value
+        dbnm = _kv_client.get_secret(f"db-map-{db_code}").value
         conn_str = tpl.replace("{db}", dbnm)
     except Exception as e:
         logging.error(f"Key Vault (per-request) error: {e}")
