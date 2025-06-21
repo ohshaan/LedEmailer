@@ -1,0 +1,38 @@
+name: Deploy to Azure Function App (Reusable)
+
+on:
+  workflow_dispatch:
+    inputs:
+      azure_function_app:
+        description: 'Azure Function App Name (case-sensitive!)'
+        required: true
+        type: string
+      python_version:
+        description: 'Python version (e.g. 3.11)'
+        required: false
+        default: '3.11'
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ github.event.inputs.python_version }}
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Publish to Azure Functions (Remote Build)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ github.event.inputs.azure_function_app }}
+          package: .
+          remote-build: true
