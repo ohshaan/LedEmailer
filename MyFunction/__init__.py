@@ -39,10 +39,12 @@ _smtp_port     = int(safe_get_secret(_kv_client, "email-smtp-port", required=Fal
 _smtp_username = safe_get_secret(_kv_client, "email-username", required=False)
 _smtp_password = safe_get_secret(_kv_client, "email-password", required=False)
 _sql_template  = safe_get_secret(_kv_client, "sql-connection-template")  # Required!
+_sql_template  = safe_get_secret(_kv_client, "sql-connection-template")  # Required!
+
+logging.info(f"SMTP config: server={_smtp_server}, port={_smtp_port}, user={_smtp_username}")
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Ledger Report triggered.")
-
     try:
         body = req.get_json()
         logging.info("Incoming payload: %s", json.dumps(body, indent=2))
